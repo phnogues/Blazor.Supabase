@@ -1,0 +1,165 @@
+﻿@page "/admin/crepes"
+
+@using Blazor.Supabase.Data
+@using Blazor.Supabase.Models.Entities
+
+@rendermode InteractiveServer
+
+<h1>Crepes - Admin</h1>
+
+<h3>Add a new crepe</h3>
+@* Add crepe *@
+<RadzenTemplateForm Context="addCrepeForm" TItem="Crepe" Data=@NewCrepe Submit=@FormAddCrepeSubmitted>
+	<RadzenStack Gap="1rem">
+
+		@* Name *@
+		<RadzenFormField Text="Name *" Variant="@variant" AllowFloatingLabel="false">
+			<ChildContent>
+				<RadzenTextBox Name="Name" @bind-Value=@NewCrepe.Name />
+			</ChildContent>
+
+			<Helper>
+				<RadzenRequiredValidator Component="Name" Text="Name is required." />
+			</Helper>
+		</RadzenFormField>
+
+		@* Price *@
+		<RadzenFormField Text="Price *" Variant="@variant" AllowFloatingLabel="false">
+			<ChildContent>
+				<RadzenNumeric Name="Price" @bind-Value=@NewCrepe.Price />
+			</ChildContent>
+
+			<Helper>
+				<RadzenRequiredValidator Component="Price" Text="Price is required." />
+			</Helper>
+		</RadzenFormField>
+
+		@* Ingredients *@
+		<RadzenFormField Text="Ingredients *" Variant="@variant" AllowFloatingLabel="false">
+			<ChildContent>
+				<RadzenDropDown AllowClear="true" @bind-Value=SelectedIngredients
+								Multiple="true" SelectAllText="All ingredients"
+								Data=@Ingredients SelectedItemsText="ingredients selected" Placeholder="Ingredients"
+								TextProperty="@nameof(Ingredient.Name)" ValueProperty="@nameof(Ingredient.Id)"
+								Style="width: 100%;" Name="DdlIngredients">
+				</RadzenDropDown>
+			</ChildContent>
+			<Helper>
+				<RadzenRequiredValidator Component="DdlIngredients" Text="Ingredients are required." />
+			</Helper>
+		</RadzenFormField>
+
+		@* Submit *@
+		<RadzenButton ButtonType="ButtonType.Submit" Text="Add"></RadzenButton>
+	</RadzenStack>
+</RadzenTemplateForm>
+
+<div class="pt-5">
+	<h3>All crepes</h3>
+	@* All crepes *@
+	<RadzenDataGrid @ref="crepesGrid" AllowFiltering="true" AllowPaging="true" PageSize="10" AllowSorting="true" Data="@Crepes" TItem="Crepe">
+		<Columns>
+			<RadzenDataGridColumn Property="Id" Title="ID" />
+			<RadzenDataGridColumn Property="Name" Title="Name">
+				<EditTemplate Context="crepe">
+					<RadzenTextBox @bind-Value="crepe.Name" Style="width:200px; display: block" Name="Name" aria-label="Enter crepe name" />
+					<RadzenRequiredValidator Text="Name is required" Component="Name" Popup="true" />
+				</EditTemplate>
+			</RadzenDataGridColumn>
+			<RadzenDataGridColumn Property="Price" Title="Price">
+				<EditTemplate Context="crepe">
+					<RadzenNumeric @bind-Value="crepe.Price" Style="width:200px; display: block" Name="Price" aria-label="Enter crepe price" />
+					<RadzenRequiredValidator Text="Price is required" Component="Price" Popup="true" />
+				</EditTemplate>
+			</RadzenDataGridColumn>
+			<RadzenDataGridColumn Property="ImageUrl" Title="ImageUrl">
+				<EditTemplate Context="crepe">
+					<RadzenTextBox @bind-Value="crepe.ImageUrl" Style="width:200px; display: block" Name="ImageUrl" aria-label="Enter crepe image url" />
+				</EditTemplate>
+			</RadzenDataGridColumn>
+
+			<RadzenDataGridColumn Context="crepe" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
+				<Template Context="crepe">
+					<RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@(args => EditRow(crepe))" @onclick:stopPropagation="true">
+					</RadzenButton>
+					<RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(args => DeleteRow(crepe))" @onclick:stopPropagation="true">
+					</RadzenButton>
+				</Template>
+				<EditTemplate Context="crepe">
+					<RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@((args) => SaveRow(crepe))" aria-label="Save">
+					</RadzenButton>
+					<RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@((args) => CancelEdit(crepe))" aria-label="Cancel">
+					</RadzenButton>
+					<RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Click="@(args => DeleteRow(crepe))" aria-label="Delete">
+					</RadzenButton>
+				</EditTemplate>
+			</RadzenDataGridColumn>
+		</Columns>
+	</RadzenDataGrid>
+</div>
+
+@code {
+	// UI
+	RadzenDataGrid<Crepe> crepesGrid;
+	Variant variant = Variant.Outlined;
+
+	// Properties
+	Crepe NewCrepe = new Crepe();
+
+	IEnumerable<Ingredient> Ingredients = new List<Ingredient>();
+	IEnumerable<long>? SelectedIngredients { get; set; }
+
+	IEnumerable<Crepe> Crepes = new List<Crepe>();
+
+	// Injected repositories
+	[Inject]
+	CrepeRepository _crepeRepository { get; set; }
+
+	[Inject]
+	IngredientRepository _ingredientRepository { get; set; }
+
+
+	protected override async Task OnInitializedAsync()
+	{
+		await base.OnInitializedAsync();
+
+		await LoadDatas();
+	}
+
+	async Task FormAddCrepeSubmitted(Crepe crepe)
+	{
+		crepe.Ingredients = Ingredients.Where(i => SelectedIngredients.Contains(i.Id)).ToList();
+		await _crepeRepository.Insert(crepe);
+
+		NewCrepe = new();
+		await LoadDatas();
+	}
+
+	async Task EditRow(Crepe crepe)
+	{
+		await crepesGrid.EditRow(crepe);
+	}
+
+	async Task DeleteRow(Crepe crepe)
+	{
+		await _crepeRepository.Delete(crepe);
+		await LoadDatas();
+	}
+
+	async Task SaveRow(Crepe crepe)
+	{
+		await _crepeRepository.Update(crepe);
+		await LoadDatas();
+	}
+
+	void CancelEdit(Crepe crepe)
+	{
+		crepesGrid.CancelEditRow(crepe);
+	}
+
+	async Task LoadDatas()
+	{
+		Crepes = await _crepeRepository.GetAll();
+		Ingredients = await _ingredientRepository.GetAll();
+	}
+}
