@@ -1,4 +1,6 @@
-﻿namespace Blazor.Supabase.Data;
+﻿using FluentResults;
+
+namespace Blazor.Supabase.Data;
 
 public interface IDataRepository<T> where T : class
 {
@@ -10,5 +12,5 @@ public interface IDataRepository<T> where T : class
 
 	Task<T?> Update(T entity);
 
-	Task Delete(T entity);
+	Task<Result> Delete(T entity);
 }

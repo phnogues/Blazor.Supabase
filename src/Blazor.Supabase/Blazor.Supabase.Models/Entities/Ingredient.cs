@@ -8,7 +8,7 @@ public class Ingredient : BaseEntity
 	[Column("name")]
 	public string Name { get; set; }
 
-	[Reference(typeof(Crepe))] 
-	public List<Crepe> Crepes { get; set; } = new();
+	//[Reference(typeof(Crepe))] 
+	//public List<Crepe>? Crepes { get; set; } = new();
 
 }

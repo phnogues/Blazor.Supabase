@@ -1,10 +1,13 @@
-﻿using Blazor.Supabase.Models.Entities;
+﻿using Blazor.Supabase.Models.Dtos;
+using Blazor.Supabase.Models.Entities;
+using Blazor.Supabase.Models.Extensions;
+using FluentResults;
 using Supabase;
 using static Supabase.Postgrest.Constants;
 
 namespace Blazor.Supabase.Data;
 
-public class CrepeRepository : IDataRepository<Crepe>
+public class CrepeRepository : IDataRepository<CrepeDto>
 {
 	private readonly Client _client;
 
@@ -13,24 +16,28 @@ public class CrepeRepository : IDataRepository<Crepe>
 		_client = client;
 	}
 
-	public async Task<IEnumerable<Crepe>> GetAll()
+	public async Task<IEnumerable<CrepeDto>> GetAll()
 	{
 		var result = await _client.From<Crepe>()
 						.Order(c=>c.Name, Ordering.Ascending)
 						.Get();
 
-		return result.Models;
+		return result.Models.ToDtos();
 	}
 
-	public async Task<Crepe?> GetById(long id)
+	public async Task<CrepeDto?> GetById(long id)
 	{
-		return await _client.From<Crepe>()
+		var result = await _client.From<Crepe>()
 						.Where(c => c.Id == id)
 						.Single();
+
+		return result.ToDto();
 	}
 
-	public async Task<Crepe?> Insert(Crepe entity)
+	public async Task<CrepeDto?> Insert(CrepeDto dto)
 	{
+		var entity = dto.ToEntity();
+
 		var response = await _client.From<Crepe>().Insert(entity);
 		await _client.From<CrepeIngredient>().Insert(entity.Ingredients.Select(i=> new CrepeIngredient { CrepeId = response?.Model.Id ?? 0, IngredientId = i.Id}).ToList());
 
@@ -42,22 +49,28 @@ public class CrepeRepository : IDataRepository<Crepe>
 		return null;
 	}
 
-	public async Task<Crepe?> Update(Crepe crepe)
+	public async Task<CrepeDto?> Update(CrepeDto dto)
 	{
-		var dbCrepe = await _client.From<Crepe>().Where(r => r.Id == crepe.Id).Single();
+		var entity = dto.ToEntity();
+		var dbCrepe = await _client.From<Crepe>().Where(r => r.Id == entity.Id).Single();
 
 		// values to update
-		dbCrepe.Name = crepe.Name;
-		dbCrepe.Price = crepe.Price;
-		dbCrepe.ImageUrl = crepe.ImageUrl;
+		dbCrepe.Name = entity.Name;
+		dbCrepe.Price = entity.Price;
+		dbCrepe.ImageUrl = entity.ImageUrl;
+
+		await _client.From<CrepeIngredient>().Where(ci => ci.CrepeId == dbCrepe.Id).Delete();
+		await _client.From<CrepeIngredient>().Insert(entity.Ingredients.Select(i => new CrepeIngredient { CrepeId = dbCrepe?.Id ?? 0, IngredientId = i.Id }).ToList());
 
 		var crepeUpdated = await dbCrepe.Update<Crepe>();
 
-		return crepeUpdated.Model;
+		return crepeUpdated.Model.ToDto();
 	}
 
-	public async Task Delete(Crepe entity)
+	public async Task<Result> Delete(CrepeDto dto)
 	{
-		await _client.From<Crepe>().Where(c => c.Id == entity.Id).Delete();
+		await _client.From<Crepe>().Where(c => c.Id == dto.Id).Delete();
+
+		return Result.Ok();
 	}
 }

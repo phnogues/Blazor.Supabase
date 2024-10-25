@@ -6,8 +6,8 @@ namespace Blazor.Supabase.Models.Entities;
 public class BaseEntity : BaseModel
 {
 	[PrimaryKey("id", false)]
-	public long Id { get; set; }
+	public int Id { get; set; }
 
 	[Column("created_at")]
-	public DateTime CreatedAt { get; set; }
+	public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

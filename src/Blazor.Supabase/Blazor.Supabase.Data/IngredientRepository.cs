@@ -1,5 +1,8 @@
 ﻿using Blazor.Supabase.Models.Entities;
+using FluentResults;
 using Supabase;
+using Supabase.Postgrest.Exceptions;
+using static Supabase.Postgrest.Constants;
 
 namespace Blazor.Supabase.Data;
 
@@ -12,14 +15,28 @@ public class IngredientRepository : IDataRepository<Ingredient>
 		_client = client;
 	}
 
-	public Task Delete(Ingredient entity)
+	public async Task<Result> Delete(Ingredient entity)
 	{
-		throw new NotImplementedException();
+		try
+		{
+			await _client.From<Ingredient>().Where(c => c.Id == entity.Id).Delete();
+			return Result.Ok();
+
+		}
+		catch (PostgrestException ex)
+		{
+			if(ex.Reason.ToString() == "ForeignKeyViolation")
+			{
+				return Result.Fail("This ingredient is using by crepes !");
+			} 
+			
+			return Result.Fail(ex.Message);
+		}
 	}
 
 	public async Task<IEnumerable<Ingredient>> GetAll()
 	{
-		var result = await _client.From<Ingredient>()
+		var result = await _client.From<Ingredient>().Order(i => i.Name, Ordering.Ascending)
 						.Get();
 
 		return result.Models;
@@ -32,13 +49,22 @@ public class IngredientRepository : IDataRepository<Ingredient>
 						.Single();
 	}
 
-	public Task<Ingredient?> Insert(Ingredient entity)
+	public async Task<Ingredient?> Insert(Ingredient entity)
 	{
-		throw new NotImplementedException();
+		var response = await _client.From<Ingredient>().Insert(entity);
+
+		return response.Model;
 	}
 
-	public Task<Ingredient?> Update(Ingredient entity)
+	public async Task<Ingredient?> Update(Ingredient entity)
 	{
-		throw new NotImplementedException();
+		var dbIngredient = await _client.From<Ingredient>().Where(r => r.Id == entity.Id).Single();
+
+		// values to update
+		dbIngredient.Name = entity.Name;
+
+		var ingredientUpdated = await dbIngredient.Update<Ingredient>();
+
+		return ingredientUpdated.Model;
 	}
 }
