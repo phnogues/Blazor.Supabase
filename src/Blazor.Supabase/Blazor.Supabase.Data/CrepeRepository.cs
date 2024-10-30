@@ -79,6 +79,7 @@ public class CrepeRepository : IDataRepository<CrepeDto>
 
 	public async Task<Result> Delete(CrepeDto dto)
 	{
+		await _client.From<CrepeIngredient>().Where(ci => ci.CrepeId == dto.Id).Delete();
 		await _client.From<Crepe>().Where(c => c.Id == dto.Id).Delete();
 
 		return Result.Ok();
