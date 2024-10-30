@@ -18,7 +18,7 @@ public class CrepeDto
 	{
 		get
 		{
-			return Ingredients.Select(x => x.Id);
+			return Ingredients?.Select(x => x.Id);
 		}
 
 		set

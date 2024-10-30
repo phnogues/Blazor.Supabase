@@ -1,5 +1,10 @@
 ﻿@page "/crepes"
 
+@using BlazorSupabase.Web.Realtime
+@using Supabase.Realtime
+@using Supabase.Realtime.Interfaces
+@using Supabase.Realtime.PostgresChanges
+
 <PageTitle>Our Crepes | Crep Store !</PageTitle>
 <h1>Our Crepes</h1>
 
@@ -10,19 +15,24 @@
 		@foreach (var crepe in Crepes)
 		{
 			<RadzenCard class="rz-my-4 rz-mx-4 col-md-3">
-				
-					<RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Start" Gap="1rem">
-						<RadzenImage Path="@(string.IsNullOrEmpty(crepe.ImageUrl) ? Constants.DEFAULT_IMAGE : crepe.ImageUrl)" Style="width: 100px; height: 100px; border-radius: 50%;" />
-						<RadzenStack Gap="0">
-							<RadzenText TextStyle="TextStyle.Overline" class="rz-display-flex rz-mt-2 rz-my-0">Name</RadzenText>
-							<RadzenText TextStyle="TextStyle.Body1"><b>@crepe.Name</b></RadzenText>
-							<RadzenText TextStyle="TextStyle.Overline" class="rz-display-flex rz-mt-4 rz-mb-0">Price</RadzenText>
-							<RadzenText TextStyle="TextStyle.Body1"><b>@crepe.Price €</b></RadzenText>						
-						</RadzenStack>
+
+				<RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Start" Gap="1rem">
+					<RadzenImage Path="@(string.IsNullOrEmpty(crepe.ImageUrl) ? BlazorSupabase.Models.Constants.DEFAULT_IMAGE : crepe.ImageUrl)" Style="width: 100px; height: 100px; border-radius: 50%;" />
+					<RadzenStack Gap="0">
+						<RadzenText TextStyle="TextStyle.Overline" class="rz-display-flex rz-mt-2 rz-my-0">Name</RadzenText>
+						<RadzenText TextStyle="TextStyle.Body1"><b>@crepe.Name</b></RadzenText>
+						<RadzenText TextStyle="TextStyle.Overline" class="rz-display-flex rz-mt-4 rz-mb-0">Price</RadzenText>
+						<RadzenText TextStyle="TextStyle.Body1"><b>@crepe.Price €</b></RadzenText>
 					</RadzenStack>
+				</RadzenStack>
 				<RadzenStack>
 					<RadzenText TextStyle="TextStyle.Overline" class="rz-display-flex rz-mt-4 rz-mb-0">Ingredients</RadzenText>
 					<RadzenText TextStyle="TextStyle.Body2"><b>@string.Join(", ", crepe.Ingredients.Select(i => i.Name))</b></RadzenText>
+				</RadzenStack>
+				<RadzenStack>
+					<div class="text-center mt-3">
+						<button class="btn btn-primary" @onclick="(()=> Order(crepe))">Order</button>
+					</div>
 				</RadzenStack>
 			</RadzenCard>
 		}
@@ -44,12 +54,35 @@ else
 	[Inject]
 	private CrepeRepository _crepeRepository { get; set; }
 
+	[Inject]
+	Supabase.Client _supabase { get; set; }
+
 	IEnumerable<CrepeDto> Crepes { get; set; }
+
+	private RealtimeChannel? _kitchenChannel;
 
 	protected override async Task OnInitializedAsync()
 	{
 		Crepes = await _crepeRepository.GetAll();
 
-		await base.OnInitializedAsync();
+		// Realtime
+		await _supabase.Realtime.ConnectAsync();
+		_kitchenChannel = _supabase.Realtime.Channel("order");
+		if (!_kitchenChannel.IsJoined)
+		{
+			_kitchenChannel.Register<Order>(true, true);
+		}
+
+		await _kitchenChannel.Subscribe();
+	}
+
+	private async Task Order(CrepeDto crepe)
+	{
+		_kitchenChannel?.Broadcast<Order>()?.Send("order", new Order { Name = crepe.Name, Price = crepe.Price, Date = DateTime.UtcNow }); ;
+	}
+
+	public void Dispose()
+	{
+		_kitchenChannel?.Unsubscribe();
 	}
 }

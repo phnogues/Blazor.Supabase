@@ -1,0 +1,92 @@
+﻿@page "/admin/kitchen"
+
+@using BlazorSupabase.Web.Realtime
+@using Supabase.Realtime
+@using Supabase.Realtime.Interfaces
+@using Supabase.Realtime.Models
+@using Supabase.Realtime.PostgresChanges
+
+<h3>Kitchen</h3>
+
+<ul class="list-group">
+	@foreach (var crepeEvent in Events)
+	{
+		<li class="list-group-item">@crepeEvent</li>
+	}
+</ul>
+
+@code {
+
+	[Inject]
+	Supabase.Client _supabase { get; set; }
+
+	[Inject]
+	NotificationService _notificationService { get; set; }
+
+	List<string> Events = new List<string>();
+
+	private RealtimeChannel? _orderChannel;
+	private RealtimeChannel? _crepesChannel;
+
+	protected override async Task OnInitializedAsync()
+	{
+		await _supabase.Realtime.ConnectAsync();
+
+		// channel for crepes changes
+		_crepesChannel = _supabase.Realtime.Channel("public:crepes");
+		if (!_crepesChannel.IsJoined)
+		{
+			_crepesChannel.Register(new PostgresChangesOptions("public", "crepes"));
+		}
+		_crepesChannel.AddPostgresChangeHandler(PostgresChangesOptions.ListenType.Inserts, CrepeInsertedHandler);
+		_crepesChannel.AddPostgresChangeHandler(PostgresChangesOptions.ListenType.Updates, CrepeUpdatedHandler);
+
+		await _crepesChannel.Subscribe();
+
+		// channel for orders
+		_orderChannel = _supabase.Realtime.Channel("order");
+		if (!_orderChannel.IsJoined)
+		{
+			_orderChannel.Register<Order>(true, true);
+			_orderChannel?.Broadcast<Order>()?.AddBroadcastEventHandler(HandleOrderBroadcastReceived);
+		}
+
+		await _orderChannel.Subscribe();
+	}
+
+	private void CrepeInsertedHandler(IRealtimeChannel _, PostgresChangesResponse change)
+	{
+		var crepe = change.Model<Crepe>();
+		_notificationService.Notify(NotificationSeverity.Success, "New crepe inserted", $"{crepe.Name}");
+		Events.Add($"New crepe inserted: {crepe.Name}");
+
+		this.InvokeAsync(() => this.StateHasChanged());
+	}
+
+	private void CrepeUpdatedHandler(IRealtimeChannel _, PostgresChangesResponse change)
+	{
+		var crepe = change.Model<Crepe>();
+		_notificationService.Notify(NotificationSeverity.Success, "Crepe updated", $"{crepe.Name}");
+		Events.Add($"Crepe updated: {crepe.Name}");
+
+		this.InvokeAsync(() => this.StateHasChanged());
+	}
+
+	private void HandleOrderBroadcastReceived(IRealtimeBroadcast sender, BaseBroadcast? args)
+	{
+		var order = _orderChannel?.Broadcast<Order>()?.Current();
+
+		if (order == null) return;
+
+		_notificationService.Notify(NotificationSeverity.Warning, "New order ! ", $"{order.Name}");
+		Events.Add($"New order: {order.Name} {order.Price}€ {order.Date}");
+
+		this.InvokeAsync(() => this.StateHasChanged());
+	}
+
+	public void Dispose()
+	{
+		_orderChannel?.Unsubscribe();
+		_crepesChannel?.Unsubscribe();
+	}
+}
