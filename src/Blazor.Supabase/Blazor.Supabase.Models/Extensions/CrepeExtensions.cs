@@ -1,7 +1,7 @@
-﻿using Blazor.Supabase.Models.Dtos;
-using Blazor.Supabase.Models.Entities;
+﻿using BlazorSupabase.Models.Dtos;
+using BlazorSupabase.Models.Entities;
 
-namespace Blazor.Supabase.Models.Extensions;
+namespace BlazorSupabase.Models.Extensions;
 
 public static class CrepeExtensions
 {
@@ -16,7 +16,6 @@ public static class CrepeExtensions
 			Ingredients = dto.Ingredients
 		};
 	}
-
 
 	public static List<CrepeDto> ToDtos(this List<Crepe> entities)
 	{

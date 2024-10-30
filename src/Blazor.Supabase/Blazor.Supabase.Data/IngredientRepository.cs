@@ -1,10 +1,10 @@
-﻿using Blazor.Supabase.Models.Entities;
+﻿using BlazorSupabase.Models.Entities;
 using FluentResults;
 using Supabase;
 using Supabase.Postgrest.Exceptions;
 using static Supabase.Postgrest.Constants;
 
-namespace Blazor.Supabase.Data;
+namespace BlazorSupabase.Data;
 
 public class IngredientRepository : IDataRepository<Ingredient>
 {

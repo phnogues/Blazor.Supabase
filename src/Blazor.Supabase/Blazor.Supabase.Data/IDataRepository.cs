@@ -1,6 +1,6 @@
 ﻿using FluentResults;
 
-namespace Blazor.Supabase.Data;
+namespace BlazorSupabase.Data;
 
 public interface IDataRepository<T> where T : class
 {

@@ -1,4 +1,4 @@
-﻿namespace Blazor.Supabase.Models.Dtos;
+﻿namespace BlazorSupabase.Models.Dtos;
 
 public class IngredientDto
 {

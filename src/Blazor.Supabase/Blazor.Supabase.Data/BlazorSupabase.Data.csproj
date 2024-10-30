@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Blazor.Supabase.Models\Blazor.Supabase.Models.csproj" />
+    <ProjectReference Include="..\Blazor.Supabase.Models\BlazorSupabase.Models.csproj" />
   </ItemGroup>
 
 </Project>

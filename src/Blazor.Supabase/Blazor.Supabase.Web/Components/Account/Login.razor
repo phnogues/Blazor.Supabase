@@ -1,0 +1,81 @@
+﻿@page "/Account/Login"
+@using BlazorSupabase.Web.Helpers
+@using BlazorSupabase.Web.Services
+@using Microsoft.AspNetCore.Components.Authorization
+
+<h1>Login</h1>
+
+<CascadingAuthenticationState>
+	<AuthorizeView>
+		<Authorized>
+			<h2>You are already registered</h2>
+			<a href="/account/manage">See my account</a>
+		</Authorized>
+		<NotAuthorized>
+			<RadzenCard class="rz-my-12 rz-mx-auto rz-p-4 rz-p-md-12" style="max-width: 600px;">
+				<RadzenTemplateForm Context="loginForm" Data=@("LoginWithDefaultValues")>
+					<RadzenLogin AllowRegister="true"
+								 AllowResetPassword="true"
+								 Username=@userName
+								 Password=@password
+								 AllowRememberMe="true"
+								 RememberMe="@rememberMe"
+								 Login=@(args => OnLogin(args, "Login with default values"))
+								 ResetPassword=@(args => OnResetPassword(args, "Login with default values"))
+								 Register=@(args => OnRegister("Login with default values")) />
+				</RadzenTemplateForm>
+
+				<p class="text-center text-danger">
+					@error
+				</p>
+
+			</RadzenCard>
+		</NotAuthorized>
+	</AuthorizeView>
+</CascadingAuthenticationState>
+
+@code {
+
+	string returnUrl { get; set; }
+
+	[Inject]
+	NavigationManager _navigationManager { get; set; }
+
+	[Inject]
+	NotificationService _notificationService { get; set; }
+
+	[Inject]
+	AuthService _authService { get; set; }
+
+	string userName = "";
+	string password = "";
+
+	string error;
+	bool rememberMe = true;
+
+	async Task OnLogin(LoginArgs args, string name)
+	{
+		error = string.Empty;
+		var result = await _authService.LoginAsync(args.Username, args.Password);
+
+		if (result.IsSuccess)
+		{
+			_navigationManager.NavigateTo(string.IsNullOrEmpty(returnUrl) ? "/" : returnUrl, true);
+		}
+		else
+		{
+			error = result.Errors.ToStringError();
+			_notificationService.Notify(NotificationSeverity.Error, "Error connecting", result.Errors.ToStringError());
+		}
+	}
+
+	void OnRegister(string name)
+	{
+		_navigationManager.NavigateTo("/account/register");
+	}
+
+	void OnResetPassword(string value, string name)
+	{
+		_navigationManager.NavigateTo("/account/forgot-password");
+	}
+}

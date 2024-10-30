@@ -1,6 +1,6 @@
 ﻿using Supabase.Postgrest.Attributes;
 
-namespace Blazor.Supabase.Models.Entities;
+namespace BlazorSupabase.Models.Entities;
 
 [Table("crepes")]
 public class Crepe : BaseEntity

@@ -1,4 +1,4 @@
-﻿namespace Blazor.Supabase.Models;
+﻿namespace BlazorSupabase.Models;
 
 public class Constants
 {

@@ -1,24 +1,49 @@
-﻿@inherits LayoutComponentBase
-<RadzenComponents @rendermode="InteractiveServer" />
+﻿@using BlazorSupabase.Web.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@inherits LayoutComponentBase
+<RadzenComponents @rendermode="InteractiveAuto" />
 
 <div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+	<div class="sidebar">
+		<NavMenu />
+	</div>
 
-    <main>
-        <div class="top-row px-4">
-            <b>Crepe store</b>
-        </div>
+	<main>
+		<div class="top-row px-4">
+			<b>Crepe store </b>
+			<CascadingAuthenticationState>
+				<AuthorizeView>
+					<Authorized>
+						<a href="/account/manage">Hello @user?.FirstName</a>
+					</Authorized>
+					<NotAuthorized>
+						<a href="/account/login">Login</a>
+					</NotAuthorized>
+				</AuthorizeView>
+			</CascadingAuthenticationState>
+		</div>
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
+		<article class="content px-4">
+			@Body
+		</article>
+	</main>
 </div>
 
 <div id="blazor-error-ui">
-    An unhandled error has occurred.
-    <a href="" class="reload">Reload</a>
-    <a class="dismiss">🗙</a>
+	An unhandled error has occurred.
+	<a href="" class="reload">Reload</a>
+	<a class="dismiss">🗙</a>
 </div>
+
+@code {
+	[Inject]
+	UserService _userService { get; set; }
+
+	ApplicationUser? user;
+
+	protected override async Task OnInitializedAsync()
+	{
+		user = await _userService.GetUser();
+		await base.OnInitializedAsync();
+	}
+}

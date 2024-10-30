@@ -1,11 +1,11 @@
-﻿using Blazor.Supabase.Models.Dtos;
-using Blazor.Supabase.Models.Entities;
-using Blazor.Supabase.Models.Extensions;
+﻿using BlazorSupabase.Models.Dtos;
+using BlazorSupabase.Models.Entities;
+using BlazorSupabase.Models.Extensions;
 using FluentResults;
 using Supabase;
 using static Supabase.Postgrest.Constants;
 
-namespace Blazor.Supabase.Data;
+namespace BlazorSupabase.Data;
 
 public class CrepeRepository : IDataRepository<CrepeDto>
 {
@@ -19,7 +19,7 @@ public class CrepeRepository : IDataRepository<CrepeDto>
 	public async Task<IEnumerable<CrepeDto>> GetAll()
 	{
 		var result = await _client.From<Crepe>()
-						.Order(c=>c.Name, Ordering.Ascending)
+						.Order(c => c.Name, Ordering.Ascending)
 						.Get();
 
 		return result.Models.ToDtos();
@@ -39,7 +39,12 @@ public class CrepeRepository : IDataRepository<CrepeDto>
 		var entity = dto.ToEntity();
 
 		var response = await _client.From<Crepe>().Insert(entity);
-		await _client.From<CrepeIngredient>().Insert(entity.Ingredients.Select(i=> new CrepeIngredient { CrepeId = response?.Model.Id ?? 0, IngredientId = i.Id}).ToList());
+		await _client.From<CrepeIngredient>()
+			.Insert(entity.Ingredients.Select(i => new CrepeIngredient
+			{
+				CrepeId = response?.Model.Id ?? 0,
+				IngredientId = i.Id
+			}).ToList());
 
 		if (response.Model != null)
 		{
@@ -60,7 +65,12 @@ public class CrepeRepository : IDataRepository<CrepeDto>
 		dbCrepe.ImageUrl = entity.ImageUrl;
 
 		await _client.From<CrepeIngredient>().Where(ci => ci.CrepeId == dbCrepe.Id).Delete();
-		await _client.From<CrepeIngredient>().Insert(entity.Ingredients.Select(i => new CrepeIngredient { CrepeId = dbCrepe?.Id ?? 0, IngredientId = i.Id }).ToList());
+		await _client.From<CrepeIngredient>()
+			.Insert(entity.Ingredients.Select(i => new CrepeIngredient
+			{
+				CrepeId = dbCrepe?.Id ?? 0,
+				IngredientId = i.Id
+			}).ToList());
 
 		var crepeUpdated = await dbCrepe.Update<Crepe>();
 

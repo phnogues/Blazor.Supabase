@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blazor.Supabase.Models", "Blazor.Supabase.Models\Blazor.Supabase.Models.csproj", "{4EB9BD23-380B-4CCF-B0FE-CE1AE5430A72}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorSupabase.Models", "Blazor.Supabase.Models\BlazorSupabase.Models.csproj", "{4EB9BD23-380B-4CCF-B0FE-CE1AE5430A72}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blazor.Supabase.Data", "Blazor.Supabase.Data\Blazor.Supabase.Data.csproj", "{07BC29B4-7728-468D-B15A-F814AB7B2052}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorSupabase.Data", "Blazor.Supabase.Data\BlazorSupabase.Data.csproj", "{07BC29B4-7728-468D-B15A-F814AB7B2052}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blazor.Supabase.Web", "Blazor.Supabase.Web\Blazor.Supabase.Web.csproj", "{70CA6817-EDBF-4316-AB57-F166A59E3FF7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorSupabase.Web", "Blazor.Supabase.Web\BlazorSupabase.Web.csproj", "{3F1D5ECA-481E-4380-9EE1-59000C38893A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +23,10 @@ Global
 		{07BC29B4-7728-468D-B15A-F814AB7B2052}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{07BC29B4-7728-468D-B15A-F814AB7B2052}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{07BC29B4-7728-468D-B15A-F814AB7B2052}.Release|Any CPU.Build.0 = Release|Any CPU
-		{70CA6817-EDBF-4316-AB57-F166A59E3FF7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{70CA6817-EDBF-4316-AB57-F166A59E3FF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{70CA6817-EDBF-4316-AB57-F166A59E3FF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{70CA6817-EDBF-4316-AB57-F166A59E3FF7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F1D5ECA-481E-4380-9EE1-59000C38893A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F1D5ECA-481E-4380-9EE1-59000C38893A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F1D5ECA-481E-4380-9EE1-59000C38893A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F1D5ECA-481E-4380-9EE1-59000C38893A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

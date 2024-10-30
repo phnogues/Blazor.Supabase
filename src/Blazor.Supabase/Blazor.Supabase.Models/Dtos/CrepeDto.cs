@@ -1,8 +1,6 @@
-﻿using Blazor.Supabase.Models.Entities;
-using Supabase.Postgrest.Attributes;
-using System.Security.Cryptography;
+﻿using BlazorSupabase.Models.Entities;
 
-namespace Blazor.Supabase.Models.Dtos;
+namespace BlazorSupabase.Models.Dtos;
 
 public class CrepeDto
 {

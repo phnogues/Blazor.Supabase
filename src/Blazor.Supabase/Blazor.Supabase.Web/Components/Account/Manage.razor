@@ -1,0 +1,34 @@
+﻿@page "/Account/Manage"
+@attribute [Authorize]
+
+@using BlazorSupabase.Web.Services
+@using Microsoft.AspNetCore.Authorization
+
+<h1>My account</h1>
+
+<p>Hello @user?.FullName</p>
+
+<button class="btn btn-primary" @onclick="Logout">Logout</button>
+
+
+@code {
+
+	[Inject]
+	AuthService _authService { get; set; }
+
+	[Inject]
+	UserService _userService { get; set; }
+
+	ApplicationUser? user;
+
+	protected override async Task OnInitializedAsync()
+	{
+		user = await _userService.GetUser();
+		await base.OnInitializedAsync();
+	}
+
+	async Task Logout()
+	{
+		await _authService.LogoutAsync();
+	}
+}

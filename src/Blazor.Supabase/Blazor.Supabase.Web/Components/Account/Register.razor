@@ -1,0 +1,123 @@
+﻿@page "/Account/Register"
+
+@using BlazorSupabase.Web.Models
+@using BlazorSupabase.Web.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@using BlazorSupabase.Web.Helpers
+
+<h1>Register</h1>
+
+<CascadingAuthenticationState>
+<AuthorizeView>
+	<Authorized>
+			<h2>You are already registered</h2>
+			<a href="/account/manage">See my account</a>
+	</Authorized>
+	<NotAuthorized>
+
+		<RadzenCard class="rz-my-12 rz-mx-auto rz-p-4 rz-p-md-12" style="max-width: 600px;">
+			<RadzenTemplateForm Context="registerForm" TItem="RegisterModel" Data=@model Submit=@RegisterUser InvalidSubmit=@OnInvalidSubmit>
+				<RadzenStack Gap="1rem" class="rz-p-sm-12">
+					<RadzenFormField Text="Email" Variant="@variant">
+						<ChildContent>
+							<RadzenTextBox Name="Email" @bind-Value=@model.Email />
+						</ChildContent>
+						<Helper>
+							<RadzenRequiredValidator Component="Email" Text="Email is required" />
+							<RadzenEmailValidator Component="Email" Text="EmailNotValid" />
+						</Helper>
+					</RadzenFormField>
+
+					<RadzenFormField Text="Password" Variant="@variant">
+						<ChildContent>
+							<RadzenPassword Name="Password" @bind-Value="@model.Password" Placeholder="Enter password..." AutoComplete="false" aria-label="enter password" />
+						</ChildContent>
+						<Helper>
+							<RadzenRequiredValidator Component="Password" Text="Password is required" />
+						</Helper>
+					</RadzenFormField>
+
+					<RadzenFormField Text="RepeatPassword" Variant="@variant">
+						<ChildContent>
+							<RadzenPassword Name="RepeatPassword" @bind-Value="@model.RepeatPassword" Placeholder="Enter password..." AutoComplete="false" aria-label="enter password" />
+						</ChildContent>
+						<Helper>
+							<RadzenRequiredValidator Component="RepeatPassword" Text="RepeatPassword is required" />
+							<RadzenCompareValidator Visible=@(!string.IsNullOrEmpty(model.RepeatPassword)) Value=@model.Password Component="RepeatPassword" Text="Passwords Not The Same" Style="position: absolute" />
+						</Helper>
+					</RadzenFormField>
+
+					<RadzenFormField Text="FirstName" Variant="@variant">
+						<ChildContent>
+							<RadzenTextBox Name="FirstName" @bind-Value=@model.FirstName />
+						</ChildContent>
+						<Helper>
+							<RadzenRequiredValidator Component="FirstName" Text="FirstName is required" />
+						</Helper>
+					</RadzenFormField>
+					<RadzenFormField Text="LastName" Variant="@variant">
+						<ChildContent>
+							<RadzenTextBox Name="LastName" @bind-Value=@model.LastName />
+						</ChildContent>
+						<Helper>
+							<RadzenRequiredValidator Component="LastName" Text="LastName is required." />
+						</Helper>
+					</RadzenFormField>
+					<RadzenButton ButtonType="ButtonType.Submit" Text="Register"></RadzenButton>
+				</RadzenStack>
+			</RadzenTemplateForm>
+
+			<p class="text-center text-danger">
+				@error
+			</p>
+
+			<div class="text-center">
+				Already have an account ? <a href="/account/login">Login</a>
+			</div>
+		</RadzenCard>
+
+	</NotAuthorized>
+</AuthorizeView>
+</CascadingAuthenticationState>
+
+@code {
+	Variant variant = Variant.Outlined;
+
+	RegisterModel model = new RegisterModel();
+
+	string error;
+	string returnUrl;
+
+	[Inject]
+	NotificationService _notificationService { get; set; }
+
+	[Inject]
+	NavigationManager _navigationManager { get; set; }
+
+	[Inject] 
+	AuthService _authService { get; set; }
+
+	async Task RegisterUser(RegisterModel registerModel)
+	{
+		error = string.Empty;
+		var result = await _authService.RegisterAsync(registerModel);
+
+		if (result.IsSuccess)
+		{
+			_notificationService.Notify(NotificationSeverity.Success, "Registration successful !", "You are now registered");
+			await _authService.LoginAsync(registerModel.Email, registerModel.Password);
+
+			_navigationManager.NavigateTo(!string.IsNullOrEmpty(returnUrl) ? returnUrl : "/account/manage", true);
+		}
+		else
+		{
+			error = result.Errors.ToStringError();
+			_notificationService.Notify(NotificationSeverity.Error, "Error during registration", result.Errors.ToStringError());
+		}
+	}
+
+	void OnInvalidSubmit(FormInvalidSubmitEventArgs args)
+	{
+		_notificationService.Notify(NotificationSeverity.Error, "Error validating form", "Please check the fields");
+	}
+}
