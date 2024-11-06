@@ -3,7 +3,6 @@ using BlazorSupabase.Models.Entities;
 using BlazorSupabase.Models.Extensions;
 using FluentResults;
 using Supabase;
-using static Supabase.Postgrest.Constants;
 
 namespace BlazorSupabase.Data;
 
@@ -19,7 +18,7 @@ public class CrepeRepository : IDataRepository<CrepeDto>
 	public async Task<IEnumerable<CrepeDto>> GetAll()
 	{
 		var result = await _client.From<Crepe>()
-						.Order(c => c.Name, Ordering.Ascending)
+						.Order(c => c.Name, Supabase.Postgrest.Constants.Ordering.Ascending)
 						.Get();
 
 		return result.Models.ToDtos();
@@ -56,6 +55,9 @@ public class CrepeRepository : IDataRepository<CrepeDto>
 
 	public async Task<CrepeDto?> Update(CrepeDto dto)
 	{
+		// you can use RPC to update the ingredients in the database like : 
+		// await _client.Rpc("update_crepe_ingredients", new { crepe_id = dbCrepe.Id, ingredient_ids = entity.IngredientIds });
+
 		var entity = dto.ToEntity();
 		var dbCrepe = await _client.From<Crepe>().Where(r => r.Id == entity.Id).Single();
 
@@ -79,7 +81,6 @@ public class CrepeRepository : IDataRepository<CrepeDto>
 
 	public async Task<Result> Delete(CrepeDto dto)
 	{
-		await _client.From<CrepeIngredient>().Where(ci => ci.CrepeId == dto.Id).Delete();
 		await _client.From<Crepe>().Where(c => c.Id == dto.Id).Delete();
 
 		return Result.Ok();

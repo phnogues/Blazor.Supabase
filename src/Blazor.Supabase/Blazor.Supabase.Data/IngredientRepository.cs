@@ -2,7 +2,6 @@
 using FluentResults;
 using Supabase;
 using Supabase.Postgrest.Exceptions;
-using static Supabase.Postgrest.Constants;
 
 namespace BlazorSupabase.Data;
 
@@ -36,7 +35,7 @@ public class IngredientRepository : IDataRepository<Ingredient>
 
 	public async Task<IEnumerable<Ingredient>> GetAll()
 	{
-		var result = await _client.From<Ingredient>().Order(i => i.Name, Ordering.Ascending)
+		var result = await _client.From<Ingredient>().Order(i => i.Name, Supabase.Postgrest.Constants.Ordering.Ascending)
 						.Get();
 
 		return result.Models;
