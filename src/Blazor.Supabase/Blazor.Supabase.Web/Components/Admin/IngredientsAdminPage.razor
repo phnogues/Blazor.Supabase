@@ -56,10 +56,10 @@
 
 	// Injected repositories
 	[Inject]
-	IngredientRepository _ingredientRepository { get; set; }
+	IngredientRepository _ingredientRepository { get; set; } = default!;
 
 	[Inject]
-	NotificationService _notificationService { get; set; }
+	NotificationService _notificationService { get; set; } = default!;
 
 
 	protected override async Task OnInitializedAsync()

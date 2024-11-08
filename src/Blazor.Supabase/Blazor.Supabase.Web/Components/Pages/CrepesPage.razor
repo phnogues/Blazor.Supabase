@@ -52,12 +52,12 @@ else
 
 @code {
 	[Inject]
-	private CrepeRepository _crepeRepository { get; set; }
+	private CrepeRepository _crepeRepository { get; set; } = default!;
 
 	[Inject]
-	Supabase.Client _supabase { get; set; }
+	Supabase.Client _supabase { get; set; } = default!;
 
-	IEnumerable<CrepeDto> Crepes { get; set; }
+	IEnumerable<CrepeDto> Crepes { get; set; } = default!;
 
 	private RealtimeChannel? _kitchenChannel;
 
@@ -76,7 +76,7 @@ else
 		await _kitchenChannel.Subscribe();
 	}
 
-	private async Task Order(CrepeDto crepe)
+	private void Order(CrepeDto crepe)
 	{
 		_kitchenChannel?.Broadcast<Order>()?.Send("order", new Order { Name = crepe.Name, Price = crepe.Price, Date = DateTime.UtcNow }); ;
 	}

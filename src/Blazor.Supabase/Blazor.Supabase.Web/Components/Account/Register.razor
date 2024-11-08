@@ -85,17 +85,17 @@
 
 	RegisterModel model = new RegisterModel();
 
-	string error;
-	string returnUrl;
+	string error = string.Empty;
+	string returnUrl = string.Empty;
 
 	[Inject]
-	NotificationService _notificationService { get; set; }
+	NotificationService _notificationService { get; set; } = default!;
 
 	[Inject]
-	NavigationManager _navigationManager { get; set; }
+	NavigationManager _navigationManager { get; set; } = default!;
 
 	[Inject] 
-	AuthService _authService { get; set; }
+	AuthService _authService { get; set; } = default!;
 
 	async Task RegisterUser(RegisterModel registerModel)
 	{

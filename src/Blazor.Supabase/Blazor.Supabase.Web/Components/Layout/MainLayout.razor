@@ -37,7 +37,7 @@
 
 @code {
 	[Inject]
-	UserService _userService { get; set; }
+	UserService _userService { get; set; } = default!;
 
 	ApplicationUser? user;
 

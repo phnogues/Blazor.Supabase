@@ -39,13 +39,13 @@
 	string returnUrl { get; set; }
 
 	[Inject]
-	NavigationManager _navigationManager { get; set; }
+	NavigationManager _navigationManager { get; set; } = default!;
 
 	[Inject]
-	NotificationService _notificationService { get; set; }
+	NotificationService _notificationService { get; set; } = default!;
 
 	[Inject]
-	AuthService _authService { get; set; }
+	AuthService _authService { get; set; } = default!;
 
 	string userName = "";
 	string password = "";

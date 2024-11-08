@@ -55,12 +55,17 @@ public class IngredientRepository : IDataRepository<Ingredient>
 		return response.Model;
 	}
 
-	public async Task<Ingredient?> Update(Ingredient entity)
+	public async Task<Result<Ingredient?>> Update(Ingredient entity)
 	{
 		var dbIngredient = await _client.From<Ingredient>().Where(r => r.Id == entity.Id).Single();
 
-		// values to update
-		dbIngredient.Name = entity.Name;
+		if(dbIngredient == null)
+        {
+            return Result.Fail("Ingredient not found !");
+        }
+
+        // values to update
+        dbIngredient.Name = entity.Name;
 
 		var ingredientUpdated = await dbIngredient.Update<Ingredient>();
 

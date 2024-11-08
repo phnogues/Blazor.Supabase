@@ -18,10 +18,10 @@
 @code {
 
 	[Inject]
-	Supabase.Client _supabase { get; set; }
+	Supabase.Client _supabase { get; set; } = default!;
 
 	[Inject]
-	NotificationService _notificationService { get; set; }
+	NotificationService _notificationService { get; set; } = default!;
 
 	List<string> Events = new List<string>();
 
@@ -57,8 +57,8 @@
 	private void CrepeInsertedHandler(IRealtimeChannel _, PostgresChangesResponse change)
 	{
 		var crepe = change.Model<Crepe>();
-		_notificationService.Notify(NotificationSeverity.Success, "New crepe inserted", $"{crepe.Name}");
-		Events.Add($"New crepe inserted: {crepe.Name}");
+		_notificationService.Notify(NotificationSeverity.Success, "New crepe inserted", $"{crepe?.Name}");
+		Events.Add($"New crepe inserted: {crepe?.Name}");
 
 		this.InvokeAsync(() => this.StateHasChanged());
 	}
@@ -66,8 +66,8 @@
 	private void CrepeUpdatedHandler(IRealtimeChannel _, PostgresChangesResponse change)
 	{
 		var crepe = change.Model<Crepe>();
-		_notificationService.Notify(NotificationSeverity.Success, "Crepe updated", $"{crepe.Name}");
-		Events.Add($"Crepe updated: {crepe.Name}");
+		_notificationService.Notify(NotificationSeverity.Success, "Crepe updated", $"{crepe?.Name}");
+		Events.Add($"Crepe updated: {crepe?.Name}");
 
 		this.InvokeAsync(() => this.StateHasChanged());
 	}

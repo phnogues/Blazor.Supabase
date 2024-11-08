@@ -30,7 +30,7 @@ public class CrepeRepository : IDataRepository<CrepeDto>
 						.Where(c => c.Id == id)
 						.Single();
 
-		return result.ToDto();
+		return result?.ToDto();
 	}
 
 	public async Task<CrepeDto?> Insert(CrepeDto dto)
@@ -41,7 +41,7 @@ public class CrepeRepository : IDataRepository<CrepeDto>
 		await _client.From<CrepeIngredient>()
 			.Insert(entity.Ingredients.Select(i => new CrepeIngredient
 			{
-				CrepeId = response?.Model.Id ?? 0,
+				CrepeId = response?.Model?.Id ?? 0,
 				IngredientId = i.Id
 			}).ToList());
 
@@ -53,13 +53,18 @@ public class CrepeRepository : IDataRepository<CrepeDto>
 		return null;
 	}
 
-	public async Task<CrepeDto?> Update(CrepeDto dto)
+	public async Task<Result<CrepeDto?>> Update(CrepeDto dto)
 	{
 		// you can use RPC to update the ingredients in the database like : 
 		// await _client.Rpc("update_crepe_ingredients", new { crepe_id = dbCrepe.Id, ingredient_ids = entity.IngredientIds });
 
 		var entity = dto.ToEntity();
 		var dbCrepe = await _client.From<Crepe>().Where(r => r.Id == entity.Id).Single();
+
+		if (dbCrepe == null)
+		{
+			return Result.Fail("Crepe to update was not found in database");
+		}
 
 		// values to update
 		dbCrepe.Name = entity.Name;
@@ -70,13 +75,13 @@ public class CrepeRepository : IDataRepository<CrepeDto>
 		await _client.From<CrepeIngredient>()
 			.Insert(entity.Ingredients.Select(i => new CrepeIngredient
 			{
-				CrepeId = dbCrepe?.Id ?? 0,
+				CrepeId = dbCrepe.Id,
 				IngredientId = i.Id
 			}).ToList());
 
 		var crepeUpdated = await dbCrepe.Update<Crepe>();
 
-		return crepeUpdated.Model.ToDto();
+		return crepeUpdated?.Model?.ToDto();
 	}
 
 	public async Task<Result> Delete(CrepeDto dto)
